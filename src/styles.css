@@ -273,9 +273,9 @@
   .danger-link { min-height: 44px; padding: 0; border: 0; background: transparent; color: #a03745; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
   dialog { border: 0; }
   dialog::backdrop { background: rgba(33,20,27,.68); backdrop-filter: blur(10px) saturate(.8); }
-  .record-dialog { width: min(620px, calc(100% - 32px)); max-height: min(720px, calc(100dvh - 48px)); margin: auto; padding: 0; overflow: hidden; border: 1px solid rgba(125,49,86,.12); border-radius: 32px; background: var(--surface); color: var(--ink); box-shadow: 0 34px 90px rgba(38,21,30,.32); }
-  .dialog-shell { display: flex; max-height: min(720px, calc(100dvh - 48px)); flex-direction: column; }
-  .dialog-shell > header { display: flex; flex: 0 0 auto; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 24px 26px 18px; border-bottom: 1px solid var(--line); background: linear-gradient(135deg, #fffdfb 62%, #f8eef2); }
+  .record-dialog { width: 100dvw; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; overflow: hidden; border: 0; border-radius: 0; background: var(--surface); color: var(--ink); box-shadow: none; }
+  .dialog-shell { display: flex; height: 100%; max-height: none; flex-direction: column; }
+  .dialog-shell > header { display: flex; flex: 0 0 auto; align-items: flex-start; justify-content: space-between; gap: 20px; padding: clamp(20px, 4vw, 46px) clamp(20px, 6vw, 96px) 20px; border-bottom: 1px solid var(--line); background: linear-gradient(135deg, #fffdfb 62%, #f8eef2); }
   .dialog-heading { min-width: 0; flex: 1; }
   .dialog-shell h2 { margin: 4px 0 13px; font-size: clamp(1.7rem, 4vw, 2.2rem); line-height: 1.03; }
   .icon-button { display: inline-grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); }
@@ -284,7 +284,8 @@
   .progress { display: grid; flex: 1; grid-template-columns: repeat(4, 1fr); gap: 5px; }
   .progress i { height: 4px; border-radius: 99px; background: #e6ddda; }
   .progress i.active { background: var(--plum); box-shadow: 0 0 0 1px rgba(125,49,86,.04); }
-  .dialog-content { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 20px 26px 24px; scrollbar-gutter: stable; }
+  .dialog-content { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: clamp(22px, 4vw, 48px) clamp(20px, 6vw, 96px); scrollbar-gutter: stable; }
+  .record-dialog fieldset { width: min(760px, 100%); margin-inline: auto; }
   fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
   .prompt-help { margin: 0 0 17px; color: var(--muted); font-size: .88rem; }
   .choice-list { display: grid; gap: 7px; }
@@ -327,10 +328,11 @@
   .finalize-check input:checked + .box { background: var(--sage); color: white; }
   .finalize-check > span:last-child { display: grid; gap: 3px; }
   .finalize-check small { color: #51665f; }
-  .dialog-shell > footer { position: relative; z-index: 2; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 26px 16px; border-top: 1px solid var(--line); background: rgba(255,252,250,.97); box-shadow: 0 -12px 30px rgba(59,38,47,.05); }
-  .dialog-back, .dialog-next { min-height: 48px; padding: 0 18px; border-radius: 13px; font-weight: 720; }
-  .dialog-back { border: 0; background: transparent; color: var(--muted); }
-  .dialog-next { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 0; background: linear-gradient(110deg, var(--plum-dark), #792750); color: white; box-shadow: 0 9px 20px rgba(77,25,55,.16); }
+  .dialog-shell > footer { position: relative; z-index: 2; display: grid; flex: 0 0 auto; grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr); gap: 12px; padding: 16px clamp(20px, 6vw, 96px) calc(16px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: rgba(255,252,250,.97); box-shadow: 0 -12px 30px rgba(59,38,47,.05); }
+  .record-dialog .dialog-back, .record-dialog .dialog-next { display: inline-flex; width: 100%; min-width: 0; min-height: 54px; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border-radius: 14px; font-size: clamp(.86rem, 1.6vw, 1rem); font-weight: 720; line-height: 1.15; text-align: center; }
+  .record-dialog .dialog-back { border: 1px solid var(--line); background: #fffdfb; color: #5d5257; }
+  .record-dialog .dialog-next { border: 0; background: linear-gradient(110deg, var(--plum-dark), #792750); color: white; box-shadow: 0 9px 20px rgba(77,25,55,.16); }
+  .record-dialog .dialog-next .icon, .record-dialog .dialog-back .icon { flex: 0 0 auto; }
   .dialog-next.full { width: 100%; margin-top: 22px; }
   .rule-dialog { width: min(560px, calc(100% - 28px)); margin: auto; padding: 0; border-radius: 28px; background: var(--surface); color: var(--ink); }
   .rule-dialog > div { position: relative; padding: clamp(30px, 5vw, 52px); }
@@ -427,14 +429,14 @@
     .settings-grid { grid-template-columns: 1fr; }
     .privacy-feature { grid-row: auto; }
     .settings-card { padding: 25px 20px; }
-    .record-dialog { width: 100%; max-height: calc(100dvh - 8px); margin: auto 0 0; border-radius: 28px 28px 0 0; }
-    .dialog-shell { max-height: calc(100dvh - 8px); }
+    .record-dialog { width: 100dvw; height: 100dvh; max-height: none; margin: 0; border-radius: 0; }
+    .dialog-shell { height: 100%; max-height: none; }
     .dialog-shell > header { padding: 18px 18px 15px; }
     .dialog-shell h2 { margin-block: 3px 10px; }
-    .dialog-content { min-height: 0; padding: 16px 18px 20px; }
-    .dialog-shell > footer { padding: 12px 18px calc(12px + env(safe-area-inset-bottom)); }
+    .dialog-content { min-height: 0; padding: 18px 18px 22px; }
+    .dialog-shell > footer { gap: 10px; padding: 12px 18px calc(12px + env(safe-area-inset-bottom)); }
     .choice-list label { min-height: 58px; }
-    .dialog-next { padding-inline: 15px; font-size: .8rem; }
+    .record-dialog .dialog-back, .record-dialog .dialog-next { min-height: 52px; padding-inline: 10px; font-size: .82rem; }
     .chip-grid { grid-template-columns: 1fr; }
     .toast { right: 16px; bottom: 92px; }
   }

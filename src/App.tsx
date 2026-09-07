@@ -314,7 +314,7 @@ function RecordDialog({ open, initial, onClose, onSave }: { open: boolean; initi
 
   const save = () => onSave({ ...draft, recordStatus: finalize ? 'day_closed' : 'draft', revision: initial.revision + 1, updatedAt: new Date().toISOString() })
   const titles = ['O que você sentiu?', 'O que você observou?', 'Houve sangramento?', 'Feche o registro']
-  const nextLabels = ['Próximo: aparência', 'Próximo: sangramento', 'Revisar e fechar']
+  const nextLabels = ['Aparência', 'Sangramento', 'Fechar revisão']
   return <dialog ref={dialog} className="record-dialog" onCancel={event => { event.preventDefault(); onClose() }} aria-labelledby="record-title">
     <div className="dialog-shell">
       <header><div className="dialog-heading"><span className="eyebrow">Registro de hoje</span><h2 id="record-title">{titles[step]}</h2><div className="step-summary"><span>Etapa {step + 1} de 4</span><div className="progress" role="progressbar" aria-label={`Etapa ${step + 1} de 4`} aria-valuenow={step + 1} aria-valuemin={1} aria-valuemax={4}>{[0, 1, 2, 3].map(index => <i className={index <= step ? 'active' : ''} key={index}/>)}</div></div></div><button className="icon-button" onClick={onClose} aria-label="Fechar registro">×</button></header>
