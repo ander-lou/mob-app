@@ -29,7 +29,7 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 }
 
 function Brand() {
-  return <div className="brand" aria-label="MOB KL"><span className="brand-mark" aria-hidden="true"><i/><i/><i/></span><span>MOB <b>KL</b></span></div>
+  return <div className="brand" aria-label="MOB KL"><span className="wordmark" aria-hidden="true"><span className="wordmark-mob">M<span>O</span>B</span><span className="wordmark-kl">KL</span></span></div>
 }
 
 const navItems: Array<{ id: Tab; label: string; icon: IconName }> = [
@@ -81,15 +81,27 @@ function StateGlyph({ observation, future = false, size = 'md' }: { observation?
   return <span className={`state-glyph ${kind} ${size}`} role="img" aria-label={label}><i/><i/><i/><i/><i/><i/></span>
 }
 
-function StatusCard({ decision, goal, privateMode, onExplain }: { decision: MobDecision; goal: Goal; privateMode: boolean; onExplain: () => void }) {
+function StatusCard({ decision, goal, recordStatus, privateMode, onExplain }: { decision: MobDecision; goal: Goal; recordStatus: Observation['recordStatus']; privateMode: boolean; onExplain: () => void }) {
   const stateLabel = decision.fertilityState === 'potentially_fertile' ? 'Fertilidade potencial observada' : decision.fertilityState === 'recognized_infertility' ? 'Infertilidade reconhecida pelo padrão' : 'Ainda não é possível determinar'
   const certainty = decision.certainty === 'confirmed' ? 'Confirmado' : decision.certainty === 'provisional' ? 'Provisório' : 'Precisa de revisão'
+  const awaitingRecord = recordStatus === 'draft'
+  const guidance = decision.guidance[goal]
+  const relationshipTitle = awaitingRecord
+    ? 'Aguardando o registro de hoje'
+    : goal === 'avoid' && guidance.value === 'available'
+      ? 'Relação disponível esta noite'
+      : goal === 'avoid' && guidance.value === 'wait'
+        ? 'Aguardar relação vaginal hoje'
+        : guidance.label
+  const relationshipDetail = awaitingRecord
+    ? 'Conclua a observação no fim do dia antes de tomar uma decisão.'
+    : guidance.detail
   return <section className={`status-card ${privateMode ? 'masked' : ''}`} aria-labelledby="today-status">
-    <div className="status-card-art" aria-hidden="true"><span/><span/><span/><span/></div>
+    <img className="status-illustration" src={`${import.meta.env.BASE_URL}mob-kl-daily-orbit.png`} alt="" aria-hidden="true"/>
     <div className="status-orbit" aria-hidden="true"><i/><i/><i/><span><small>dia</small>11</span></div>
     <div className="status-meta"><span className="status-kicker">Estado observado hoje</span><span className={`certainty ${decision.certainty}`}><i/>{certainty}</span></div>
     <div className="status-copy"><h1 id="today-status">{privateMode ? 'Dados ocultos' : stateLabel}</h1>
-    <p className="guidance-label">{privateMode ? 'Toque no olho para visualizar' : decision.guidance[goal].label}</p></div>
+    <div className={`relationship-guidance ${awaitingRecord ? 'pending' : guidance.value}`} role="status"><span>{privateMode ? 'Orientação protegida' : goal === 'avoid' ? 'Para espaçar gravidez' : 'Para buscar gravidez'}</span><strong>{privateMode ? 'Toque no olho para visualizar' : relationshipTitle}</strong>{!privateMode && <small>{relationshipDetail}</small>}</div></div>
     <div className="rule-row"><span>{privateMode ? 'Interpretação protegida' : decision.ruleLabel}</span><button onClick={onExplain}>Entenda a regra <Icon name="arrow" size={16}/></button></div>
   </section>
 }
@@ -148,7 +160,7 @@ function TodayPage({ data, goal, privateMode, onGoalChange, onOpenRecord, onCale
     </header>
     <div className="today-grid">
       <div className="today-primary">
-        <StatusCard decision={decision} goal={goal} privateMode={privateMode} onExplain={onExplain}/>
+        <StatusCard decision={decision} goal={goal} recordStatus={today.recordStatus} privateMode={privateMode} onExplain={onExplain}/>
         <button className="primary-action" onClick={onOpenRecord}><span><Icon name="plus"/> {today.recordStatus === 'draft' ? 'Concluir registro de hoje' : 'Editar registro de hoje'}</span><small>Leva cerca de 30 segundos</small></button>
         <DailySnapshot observation={today} privateMode={privateMode}/>
         <WeekStrip data={data} onSelect={onSelectDay}/>
@@ -221,11 +233,27 @@ const learningCards = [
   { number: '04', tag: 'Ápice', title: 'O Ápice é retrospectivo', body: 'É o último dia de sensação escorregadia. Só pode ser confirmado no dia seguinte e não confirma diretamente a ovulação.' },
 ]
 
+const mucusStages = [
+  { key: 'dry', step: '01', sensation: 'Seca', appearance: 'Nada observado', note: 'O símbolo é compacto e sem brilho.' },
+  { key: 'creamy', step: '02', sensation: 'Úmida', appearance: 'Cremosa', note: 'A forma fica opaca, espessa e irregular.' },
+  { key: 'clear', step: '03', sensation: 'Molhada', appearance: 'Clara', note: 'A amostra se torna ampla e translúcida.' },
+  { key: 'slippery', step: '04', sensation: 'Escorregadia', appearance: 'Elástica', note: 'O desenho se alonga como um fio contínuo.' },
+]
+
+function MucusEvolution() {
+  return <section className="mucus-evolution" aria-labelledby="mucus-title">
+    <header><div><span className="eyebrow">Diferenças visíveis</span><h2 id="mucus-title">Quando o muco evolui, a forma também muda.</h2></div><p>Sensação e aparência são registradas separadamente. Estes exemplos ajudam a distinguir observações — não preveem uma sequência obrigatória.</p></header>
+    <ol>{mucusStages.map(stage => <li key={stage.key}><div className={`mucus-sample ${stage.key}`} role="img" aria-label={`${stage.sensation}, ${stage.appearance}`}><i/><i/><i/></div><div className="mucus-stage-copy"><small>{stage.step} · {stage.appearance}</small><strong>{stage.sensation}</strong><p>{stage.note}</p></div></li>)}</ol>
+    <footer><Icon name="info" size={17}/><span>O que define o padrão é a comparação com o seu próprio dia anterior. O Ápice só é confirmado retrospectivamente.</span></footer>
+  </section>
+}
+
 function LearnPage() {
   const [open, setOpen] = useState(2)
   return <div className="page learn-page">
     <DemoNotice/>
-    <header className="learn-hero"><span className="eyebrow">Aprender com calma</span><h1>Seu corpo não segue um calendário.<br/>Ele mostra um padrão.</h1><p>O Método de Ovulação Billings parte do que você percebe ao longo do dia. O registro organiza essas observações para apoiar uma conversa informada com sua instrutora.</p></header>
+    <header className="learn-hero"><span className="eyebrow">Aprender com calma</span><h1>Seu corpo não segue um calendário.<br/> Ele mostra um padrão.</h1><p>O Método de Ovulação Billings parte do que você percebe ao longo do dia. O registro organiza essas observações para apoiar uma conversa informada com sua instrutora.</p></header>
+    <MucusEvolution/>
     <div className="learn-layout">
       <section className="rules-list" aria-labelledby="rules-title"><h2 id="rules-title">As regras, em linguagem simples</h2>
         {learningCards.map((card, index) => <article className={open === index ? 'open' : ''} key={card.number}>
@@ -233,7 +261,7 @@ function LearnPage() {
           {open === index && <p>{card.body}</p>}
         </article>)}
       </section>
-      <aside className="pattern-lesson"><div className="lesson-visual" aria-hidden="true"><StateGlyph observation={{ bleeding: 'none', sensation: 'dry', appearance: 'nothing' } as Observation} size="lg"/><span className="lesson-line"/><StateGlyph observation={{ bleeding: 'none', sensation: 'damp' } as Observation} size="lg"/></div><span className="eyebrow">O princípio central</span><h2>Compare cada dia com o seu padrão.</h2><p>Uma mudança não é uma previsão. É um sinal observado que pede atenção e uma interpretação conservadora.</p><div className="boundary-note"><Icon name="info"/><p>O MOB não protege contra infecções sexualmente transmissíveis e o app não substitui acompanhamento profissional.</p></div></aside>
+      <aside className="pattern-lesson"><div className="lesson-visual" aria-hidden="true"><img src={`${import.meta.env.BASE_URL}mob-kl-organic-map.png`} alt="" loading="lazy"/><div className="lesson-sequence"><StateGlyph observation={{ bleeding: 'none', sensation: 'dry', appearance: 'nothing' } as Observation} size="lg"/><span className="lesson-line"/><StateGlyph observation={{ bleeding: 'none', sensation: 'damp' } as Observation} size="lg"/></div></div><span className="eyebrow">O princípio central</span><h2>Compare cada dia com o seu padrão.</h2><p>Uma mudança não é uma previsão. É um sinal observado que pede atenção e uma interpretação conservadora.</p><div className="boundary-note"><Icon name="info"/><p>O MOB não protege contra infecções sexualmente transmissíveis e o app não substitui acompanhamento profissional.</p></div></aside>
     </div>
   </div>
 }
@@ -252,7 +280,7 @@ function PrivacyPage({ goal, onGoalChange, privateMode, onTogglePrivate }: { goa
     <DemoNotice/>
     <header className="page-header"><span className="eyebrow">Seu espaço</span><h1>Privacidade e preferências</h1><p>Você decide o que aparece e como usa esta demonstração.</p></header>
     <div className="settings-grid">
-      <section className="settings-card privacy-feature"><div className="privacy-orbit"><Icon name="lock" size={32}/></div><span className="eyebrow">Atalho de privacidade</span><h2>Modo discreto</h2><p>Oculta o estado, a orientação e o marcador de relação com um toque.</p><Toggle checked={privateMode} onChange={onTogglePrivate} label="Ocultar dados sensíveis" description="Apenas nesta sessão de demonstração"/></section>
+      <section className="settings-card privacy-feature"><div className="privacy-visual" aria-hidden="true"><img src={`${import.meta.env.BASE_URL}mob-kl-privacy-cocoon.png`} alt="" loading="lazy"/><span><Icon name="lock" size={22}/></span></div><span className="eyebrow">Atalho de privacidade</span><h2>Modo discreto</h2><p>Oculta o estado, a orientação e o marcador de relação com um toque.</p><Toggle checked={privateMode} onChange={onTogglePrivate} label="Ocultar dados sensíveis" description="Apenas nesta sessão de demonstração"/></section>
       <section className="settings-card"><span className="eyebrow">Objetivo atual</span><h2>Como você quer usar o MOB?</h2><p>A observação não muda. A orientação é adaptada ao seu objetivo.</p><GoalSwitch goal={goal} onChange={onGoalChange}/></section>
       <section className="settings-card"><span className="eyebrow">Preferências</span><h2>Conforto e discrição</h2><Toggle checked={discreteNotifications} onChange={setDiscreteNotifications} label="Notificações discretas" description="Exibe apenas “Seu registro diário está disponível”"/><Toggle checked={highContrast} onChange={setHighContrast} label="Contraste reforçado" description="Aumenta contornos e contraste das superfícies"/></section>
       <section className="settings-card data-card"><span className="eyebrow">Dados da demonstração</span><h2>Armazenados somente neste navegador</h2><p>Este protótipo não possui conta, servidor, analytics ou sincronização. Ao recarregar, os dados fictícios originais retornam.</p><button className="danger-link" onClick={() => window.location.reload()}>Restaurar dados fictícios</button></section>
